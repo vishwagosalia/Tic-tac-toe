@@ -26,6 +26,9 @@
 
 
 (defn displayMetricBoard
+  "Replace the number with X or O depends on the toggle
+   if toggle true => X
+   if toggle false => O"
   [num]
   (if @toggle
     (swap! displayBoard str/replace (str num) "X")
@@ -36,27 +39,30 @@
   "Add user's input to user array and adds comp number.
    And then sort the atom"
   ([user num]
-   (if (in? @board num)
-     (do (println "Place is already taken")
-         (askInput user (Integer/parseInt (read-line))))
-     (do (when (= (count @board) 8)
-           (reset! winner "Its a tie"))
-         (swap! user conj num)
-         (reset! user (vec (sort @user)))
-         (swap! board conj num)
-         (displayMetricBoard num)
-         (when (> (count @board) 3)
-           (if @toggle
-             (when (checkWinner? @user)
-               (reset! winner "v1 WINS"))
-             (when (checkWinner? @user)
-               (reset! winner "v2 WINS"))))
-         (swap! toggle not)))))
+   (if (= (count @board) 7)
+     (reset! winner "Its a tie")
+     (do 
+       (if (in? @board num)
+         (do (println "Place is already taken")
+             (askInput user (Integer/parseInt (read-line))))
+         (do
+           (swap! user conj num)
+           (reset! user (vec (sort @user)))
+           (swap! board conj num)
+           (displayMetricBoard num)
+           (when (> (count @board) 3)
+             (if @toggle
+               (when (checkWinner? @user)
+                 (reset! winner "v1 WINS"))
+               (when (checkWinner? @user)
+                 (reset! winner "v2 WINS"))))
+           (swap! toggle not)))))
+   ))
 
 
 (defn main
-  [msg]
-  (println msg)
+  "take input till winner is set"
+  []
   (println "| 1 | 2 | 3 |\n| 4 | 5 | 6 |\n| 7 | 8 | 9 |")
   (println "--------------")
   (while (str/blank? @winner)
@@ -68,4 +74,3 @@
     (println "--------------"))
   (println @winner))
 
-(main "user 1 => X and user 2 => O")
